@@ -34,17 +34,30 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
         add_compile_options(
             /Od
-            /MDd
-            /RTC1
+            /MTd
             /Zo
             /EHsc
-            /analyze
-            /sdl
-            /GS
+            /DEBUG
+            /fsanitize=address
+        )
+
+        add_link_options(
+            /INCREMENTAL:NO
             /DEBUG
             /fsanitize=address
         )
     endif()
 endif()
+
+# Download and configure boost
+include(FetchContent)
+
+FetchContent_Declare(
+    Boost
+    URL https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.gz
+    DOWNLOAD_EXTRACT_TIMESTAMP ON
+    EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(Boost)
 
 add_subdirectory(src)
