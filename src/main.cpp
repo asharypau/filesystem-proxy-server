@@ -2,10 +2,10 @@
 
 int main(int argc, char* argv[])
 {
-    //return Server(3030, "local").run();
+    return Server(8080, "local").run();
 
-    ClientMetadata client1{{}, 1123423423, "dvsdafgasdfsdfsda fsdfsdafdsfsda fsdfsdf"};
-    ClientMetadata client2{{}, 123, "dvsdafgasdfsdfsda fsdfsdafdsfsda fsdfsdf dvsdafgasdfsdfsda fsdfsdafdsfsda fsdfsdf"};
+    ClientMetadata client1{{}, "1123423423", "dvsdafgasdfsdfsda fsdfsdafdsfsda fsdfsdf"};
+    ClientMetadata client2{{}, "123", " fsdfsdafdsfsda fsdfsdf dvsdafgasdfsdfsda fsdfsdafdsfsda fsdfsdf"};
 
     std::vector<ClientMetadata> v;
     v.push_back(client1);

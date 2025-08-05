@@ -40,8 +40,8 @@ int Server::run()
 
 boost::asio::awaitable<void> Server::accept()
 {
-    //Network::Tcp::Socket socket = co_await _acceptor.accept();
-    Network::Tcp::Socket socket(_context);
+    Network::Tcp::Socket socket = co_await _acceptor.accept();
+    //Network::Tcp::Socket socket(_context);
     _session_manager.run_new(std::move(socket));
 
     co_return;

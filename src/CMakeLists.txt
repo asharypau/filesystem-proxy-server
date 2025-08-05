@@ -8,6 +8,7 @@ add_executable(
 
     "models/clientmetadata.h"
     "models/client.h"
+    "models/subscriber.h"
 
     "network/constants.h"
     "network/operationexception.h"
@@ -16,6 +17,7 @@ add_executable(
     "network/tcp/socket.cpp"
 
     "services/clientregistry.h"
+    "services/iclientregisterobserver.h"
     "services/clientsubscriptionsmanager.cpp"
 
     "utils/colors.h"

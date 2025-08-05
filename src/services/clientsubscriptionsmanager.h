@@ -3,11 +3,12 @@
 
 #include "../models/client.h"
 #include "clientregistry.h"
+#include "iclientregisterobserver.h"
 #include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 
-class ClientSubscriptionsManager
+class ClientSubscriptionsManager : IClientRegistryObserver
 {
 public:
     explicit ClientSubscriptionsManager(ClientRegistry& client_registry);
@@ -20,10 +21,15 @@ public:
     ClientSubscriptionsManager(const ClientSubscriptionsManager&) = delete;
     ClientSubscriptionsManager& operator=(const ClientSubscriptionsManager&) = delete;
 
-    void subscribe(Client::id_t subject, Client::id_t subscriber);
-    void unsubscribe(Client::id_t subject, Client::id_t subscriber);
-    std::unordered_set<Client::id_t> get_subscribers(Client::id_t subject);
-    void notify(Client::id_t subject);
+    void added(const Client::id_t& id) override;
+    void removed(const Client::id_t& id) override;
+    void activated(const Client::id_t& id) override;
+    void deactivated(const Client::id_t& id) override;
+
+    std::unordered_set<Client::id_t> get_subscribers(const Client::id_t& subject);
+    void subscribe(const Client::id_t& subject, const Client::id_t& subscriber);
+    void unsubscribe(const Client::id_t& subject, const Client::id_t& subscriber);
+    void notify(const Client::id_t& subject);
 
 private:
     ClientRegistry& _client_registry;

@@ -5,37 +5,59 @@ ClientSubscriptionsManager::ClientSubscriptionsManager(ClientRegistry& client_re
     , _mtx()
     , _subscribers_map()
 {
+    _client_registry.add_observer(this);
 }
 
-void ClientSubscriptionsManager::subscribe(Client::id_t subject, Client::id_t subscriber)
+void ClientSubscriptionsManager::added(const Client::id_t& id)
 {
-    std::lock_guard<std::mutex> lock(_mtx);
-    _subscribers_map[subject].insert(subscriber);
+    notify("client_registry_update");
 }
 
-void ClientSubscriptionsManager::unsubscribe(Client::id_t subject, Client::id_t subscriber)
+void ClientSubscriptionsManager::removed(const Client::id_t& id)
 {
-    std::lock_guard<std::mutex> lock(_mtx);
-    _subscribers_map[subject].erase(subscriber);
+    notify("client_registry_update");
 }
 
-std::unordered_set<Client::id_t> ClientSubscriptionsManager::get_subscribers(Client::id_t subject)
+void ClientSubscriptionsManager::activated(const Client::id_t& id)
+{
+    notify("client_registry_update");
+}
+
+void ClientSubscriptionsManager::deactivated(const Client::id_t& id)
+{
+    notify("client_registry_update");
+}
+
+std::unordered_set<Client::id_t> ClientSubscriptionsManager::get_subscribers(const Client::id_t& subject)
 {
     static const std::unordered_set<Client::id_t> empty;
+
     std::lock_guard<std::mutex> lock(_mtx);
     auto it = _subscribers_map.find(subject);
 
     return it != _subscribers_map.end() ? it->second : empty;
 }
 
-void ClientSubscriptionsManager::notify(Client::id_t subject)
+void ClientSubscriptionsManager::subscribe(const Client::id_t& subject, const Client::id_t& subscriber)
 {
-    for (Client::id_t subscriber : get_subscribers(subject))
+    std::lock_guard<std::mutex> lock(_mtx);
+    _subscribers_map[subject].insert(subscriber);
+}
+
+void ClientSubscriptionsManager::unsubscribe(const Client::id_t& subject, const Client::id_t& subscriber)
+{
+    std::lock_guard<std::mutex> lock(_mtx);
+    _subscribers_map[subject].erase(subscriber);
+}
+
+void ClientSubscriptionsManager::notify(const Client::id_t& subject)
+{
+    for (const Client::id_t& subscriber : get_subscribers(subject))
     {
         Client client = _client_registry.get(subscriber);
         if (client.is_active())
         {
-            //client.session->update();
+            //client.session->request_update();
         }
     }
 }

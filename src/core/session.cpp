@@ -8,7 +8,7 @@ Session::Session(Network::Tcp::Socket socket,
     : _socket(std::move(socket))
     , _client_registry(client_registry)
     , _client_subscriptions_manager(client_subscriptions_manager)
-    , _client_id(0)
+    , _client_id()
 {
 }
 
@@ -38,8 +38,6 @@ boost::asio::awaitable<void> Session::activate_client()
     }
 
     _client_id = client_metadata.id;
-
-    co_return;
 }
 
 boost::asio::awaitable<void> Session::write_clients()
@@ -54,4 +52,5 @@ boost::asio::awaitable<void> Session::write_clients()
     }
 
     co_await _socket.write_async(clients_metadata);
+    _client_subscriptions_manager.subscribe("client_registry_update", _client_id);
 }

@@ -2,6 +2,7 @@
 #define CLIENTREGISTRY_H
 
 #include "../models/client.h"
+#include "iclientregisterobserver.h"
 #include <mutex>
 #include <unordered_map>
 #include <vector>
@@ -12,6 +13,7 @@ public:
     ClientRegistry()
         : _mtx()
         , _clients_map()
+        , _observers()
     {
     }
 
@@ -23,20 +25,14 @@ public:
     ClientRegistry(const ClientRegistry&) = delete;
     ClientRegistry& operator=(const ClientRegistry&) = delete;
 
-    bool exists(Client::id_t id)
+    bool exists(const Client::id_t& id)
     {
         std::lock_guard<std::mutex> lock(_mtx);
 
         return _clients_map.contains(id);
     }
 
-    void add(const Client& client)
-    {
-        std::lock_guard<std::mutex> lock(_mtx);
-        _clients_map.emplace(client.id, client);
-    }
-
-    Client get(Client::id_t id)
+    Client get(const Client::id_t& id)
     {
         std::lock_guard<std::mutex> lock(_mtx);
 
@@ -54,24 +50,67 @@ public:
             clients.push_back(pair.second);
         }
 
-        return std::move(clients);
+        return clients;
     }
 
-    void activate(Client::id_t id, Session* session)
+    void add(const Client& client)
     {
-        std::lock_guard<std::mutex> lock(_mtx);
-        _clients_map.at(id).session = session;
+        {
+            std::lock_guard<std::mutex> lock(_mtx);
+            _clients_map.emplace(client.id, client);
+        }
+
+        for (IClientRegistryObserver* observer : _observers)
+        {
+            observer->added(client.id);
+        }
     }
 
-    void deactivate(Client::id_t id)
+    void remove(const Client::id_t& id)
     {
-        std::lock_guard<std::mutex> lock(_mtx);
-        _clients_map.at(id).session = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(_mtx);
+            _clients_map.erase(id);
+        }
+
+        for (IClientRegistryObserver* observer : _observers)
+        {
+            observer->removed(id);
+        }
     }
+
+    void activate(const Client::id_t& id, Session* session)
+    {
+        {
+            std::lock_guard<std::mutex> lock(_mtx);
+            _clients_map.at(id).session = session;
+        }
+
+        for (IClientRegistryObserver* observer : _observers)
+        {
+            observer->activated(id);
+        }
+    }
+
+    void deactivate(const Client::id_t& id)
+    {
+        {
+            std::lock_guard<std::mutex> lock(_mtx);
+            _clients_map.at(id).session = nullptr;
+        }
+
+        for (IClientRegistryObserver* observer : _observers)
+        {
+            observer->deactivated(id);
+        }
+    }
+
+    void add_observer(IClientRegistryObserver* observer) { _observers.push_back(observer); }
 
 private:
     std::mutex _mtx;
     std::unordered_map<Client::id_t, Client> _clients_map;
+    std::vector<IClientRegistryObserver*> _observers;
 };
 
 #endif // CLIENTREGISTRY_H

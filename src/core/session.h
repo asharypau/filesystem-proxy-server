@@ -22,12 +22,13 @@ public:
     Session(const Session&) = delete;
     Session& operator=(const Session&) = delete;
 
+    //boost::asio::awaitable<void> request_update();
+
     template<class TCompletionHandler>
     boost::asio::awaitable<void> run(TCompletionHandler completion_handler)
     {
-        //co_await internal_run();
+        co_await internal_run();
         completion_handler(this);
-        co_return;
     }
 
 private:

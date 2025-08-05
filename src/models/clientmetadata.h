@@ -9,9 +9,9 @@
 class ClientMetadata : public Network::Serialization::ISerializable<ClientMetadata>
 {
 public:
-    using id_t = std::size_t;
+    using id_t = std::string;
 
-    id_t id = 0;
+    ClientMetadata::id_t id;
     std::string root;
 
 private:
@@ -19,42 +19,52 @@ private:
 
     Network::data_t serialize_impl() const
     {
-        Network::data_size_t offset = 0;
-        Network::data_t data(Network::DATA_SIZE + Network::DATA_SIZE + static_cast<Network::data_size_t>(root.size()));
+        Network::data_t data(Network::DATA_SIZE + static_cast<Network::data_size_t>(id.size()) + Network::DATA_SIZE
+                             + static_cast<Network::data_size_t>(root.size()));
+        Network::data_t::iterator begin = data.begin();
+
+        // id size
+        Network::data_size_t id_size = static_cast<Network::data_size_t>(id.size());
+        std::memcpy(&(*begin), &id_size, Network::DATA_SIZE);
+        begin += Network::DATA_SIZE;
 
         // id
-        std::memcpy(data.data() + offset, &id, Network::DATA_SIZE);
-        offset += Network::DATA_SIZE;
+        std::memcpy(&(*begin), id.data(), id_size);
+        begin += id_size;
 
         // root size
         Network::data_size_t root_size = static_cast<Network::data_size_t>(root.size());
-        std::memcpy(data.data() + offset, &root_size, Network::DATA_SIZE);
-        offset += Network::DATA_SIZE;
+        std::memcpy(&(*begin), &root_size, Network::DATA_SIZE);
+        begin += Network::DATA_SIZE;
 
         // root
-        std::memcpy(data.data() + offset, root.data(), root_size);
-        offset += root_size;
+        std::memcpy(&(*begin), root.data(), root_size);
+        begin += root_size;
 
-        return std::move(data);
+        return data;
     }
 
     void deserialize_impl(const Network::data_t& data)
     {
-        Network::data_size_t offset = 0;
-        const unsigned char* begin = data.data();
+        Network::data_t::const_iterator begin = data.cbegin();
+
+        // id size
+        Network::data_size_t id_size = 0;
+        std::memcpy(&id_size, &(*begin), Network::DATA_SIZE);
+        begin += Network::DATA_SIZE;
 
         // id
-        std::memcpy(&id, begin + offset, Network::DATA_SIZE);
-        offset += Network::DATA_SIZE;
+        id = std::string(begin, begin + id_size);
+        begin += id_size;
 
         // root size
         Network::data_size_t root_size = 0;
-        std::memcpy(&root_size, begin + offset, Network::DATA_SIZE);
-        offset += Network::DATA_SIZE;
+        std::memcpy(&root_size, &(*begin), Network::DATA_SIZE);
+        begin += Network::DATA_SIZE;
 
         // root
-        root = std::string(begin + offset, begin + offset + root_size);
-        offset += root_size;
+        root = std::string(begin, begin + root_size);
+        begin += root_size;
     }
 };
 

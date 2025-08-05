@@ -35,7 +35,7 @@ public:
         Network::data_t data = co_await read_data_async();
         TModel model = Network::Serialization::deserialize<TModel>(data);
 
-        co_return std::move(model);
+        co_return model;
     }
 
     template<class TModel>

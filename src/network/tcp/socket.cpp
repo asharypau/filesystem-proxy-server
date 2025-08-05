@@ -48,7 +48,7 @@ boost::asio::awaitable<Network::data_t> Network::Tcp::Socket::read_data_async()
 {
     Network::data_size_t data_size = co_await read_data_size_async();
 
-    co_return std::move(read_data(data_size));
+    co_return read_data(data_size);
 }
 
 boost::asio::awaitable<void> Network::Tcp::Socket::write_data_async(const Network::data_t& data)
@@ -98,7 +98,7 @@ Network::data_t Network::Tcp::Socket::read_data(Network::data_size_t data_size)
 
     _read_buffer.commit(data_size);
 
-    return std::move(extract_from_read_buffer(data_size));
+    return extract_from_read_buffer(data_size);
 }
 
 Network::data_t Network::Tcp::Socket::extract_from_read_buffer(Network::data_size_t data_size)
@@ -111,7 +111,7 @@ Network::data_t Network::Tcp::Socket::extract_from_read_buffer(Network::data_siz
 
     _read_buffer.consume(data_size);
 
-    return std::move(extracted_data);
+    return extracted_data;
 }
 
 Network::data_t Network::Tcp::Socket::get_write_buffer(const Network::data_t& data) const
@@ -124,5 +124,5 @@ Network::data_t Network::Tcp::Socket::get_write_buffer(const Network::data_t& da
     // copy data
     std::memcpy(write_buffer.data() + Network::DATA_SIZE, data.data(), data_size);
 
-    return std::move(write_buffer);
+    return write_buffer;
 }
