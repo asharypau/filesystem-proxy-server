@@ -1,18 +1,14 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include "clientmetadata.h"
 #include <string>
-#include <vector>
 
-class Session;
-
-class Client : public ClientMetadata
+class Client
 {
 public:
-    Session* session = nullptr;
+    using id_t = std::string;
 
-    bool is_active() const { return session != nullptr; }
+    Client::id_t id;
 };
 
 #endif // CLIENT_H

@@ -1,6 +1,7 @@
 #ifndef SESSION_H
 #define SESSION_H
 
+#include "../models/client.h"
 #include "../network/tcp/socket.h"
 #include "../services/clientregistry.h"
 #include "../services/clientsubscriptionsmanager.h"

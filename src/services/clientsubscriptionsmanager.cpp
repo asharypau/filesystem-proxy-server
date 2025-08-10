@@ -54,7 +54,7 @@ void ClientSubscriptionsManager::notify(const Client::id_t& subject)
 {
     for (const Client::id_t& subscriber : get_subscribers(subject))
     {
-        Client client = _client_registry.get(subscriber);
+        ClientContext client = _client_registry.get(subscriber);
         if (client.is_active())
         {
             //client.session->request_update();

@@ -2,23 +2,26 @@ add_executable(
     FileSystemProxy
     "main.cpp"
 
-    "core/server.cpp"
-    "core/session.cpp"
-    "core/sessionmanager.cpp"
+    "core/server.h" "core/server.cpp"
+    "core/session.h" "core/session.cpp"
+    "core/sessionmanager.h" "core/sessionmanager.cpp"
 
-    "models/clientmetadata.h"
     "models/client.h"
+    "models/clientinput.h"
+    "models/clientpayload.h"
+    "models/clientcontext.h"
     "models/subscriber.h"
 
     "network/constants.h"
     "network/operationexception.h"
     "network/serialization.h"
-    "network/tcp/acceptor.cpp"
-    "network/tcp/socket.cpp"
+    "network/tcp/acceptor.h" "network/tcp/acceptor.cpp"
+    "network/tcp/socket.h" "network/tcp/socket.cpp"
 
     "services/clientregistry.h"
     "services/iclientregisterobserver.h"
-    "services/clientsubscriptionsmanager.cpp"
+    "services/clientmapper.h" "services/clientmapper.cpp"
+    "services/clientsubscriptionsmanager.h" "services/clientsubscriptionsmanager.cpp"
 
     "utils/colors.h"
     "utils/datetimeprovider.h"

@@ -2,13 +2,14 @@
 #define CLIENTSUBSCRIPTIONSMANAGER_H
 
 #include "../models/client.h"
+#include "../models/clientcontext.h"
 #include "clientregistry.h"
 #include "iclientregisterobserver.h"
 #include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 
-class ClientSubscriptionsManager : IClientRegistryObserver
+class ClientSubscriptionsManager : public IClientRegistryObserver
 {
 public:
     explicit ClientSubscriptionsManager(ClientRegistry& client_registry);

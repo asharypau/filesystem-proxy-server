@@ -2,10 +2,14 @@
 #define CLIENTREGISTRY_H
 
 #include "../models/client.h"
+#include "../models/clientcontext.h"
 #include "iclientregisterobserver.h"
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+
+// forward declaration
+class Session;
 
 class ClientRegistry
 {
@@ -32,17 +36,17 @@ public:
         return _clients_map.contains(id);
     }
 
-    Client get(const Client::id_t& id)
+    ClientContext get(const Client::id_t& id)
     {
         std::lock_guard<std::mutex> lock(_mtx);
 
         return _clients_map.at(id);
     }
 
-    std::vector<Client> get_all()
+    std::vector<ClientContext> get_all()
     {
         std::lock_guard<std::mutex> lock(_mtx);
-        std::vector<Client> clients;
+        std::vector<ClientContext> clients;
         clients.reserve(_clients_map.size());
 
         for (auto& pair : _clients_map)
@@ -53,7 +57,7 @@ public:
         return clients;
     }
 
-    void add(const Client& client)
+    void add(const ClientContext& client)
     {
         {
             std::lock_guard<std::mutex> lock(_mtx);
@@ -109,7 +113,7 @@ public:
 
 private:
     std::mutex _mtx;
-    std::unordered_map<Client::id_t, Client> _clients_map;
+    std::unordered_map<Client::id_t, ClientContext> _clients_map;
     std::vector<IClientRegistryObserver*> _observers;
 };
 
