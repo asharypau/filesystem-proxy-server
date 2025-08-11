@@ -13,6 +13,9 @@ add_executable(
     "models/subscriber.h"
 
     "network/constants.h"
+    "network/requesttype.h"
+    "network/headerdraft.h"
+    "network/headerpackage.h"
     "network/operationexception.h"
     "network/serialization.h"
     "network/tcp/acceptor.h" "network/tcp/acceptor.cpp"
@@ -26,7 +29,7 @@ add_executable(
     "utils/colors.h"
     "utils/datetimeprovider.h"
     "utils/logger.h"
-)
+ "network/headerpackage.h" "network/requesttype.h" "network/headerdraft.h")
 
 target_include_directories(
     FileSystemProxy PRIVATE

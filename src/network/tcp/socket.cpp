@@ -1,4 +1,5 @@
 #include "socket.h"
+#include "../operationexception.h"
 
 using namespace Network::Tcp;
 
@@ -44,52 +45,12 @@ void Socket::close()
     }
 }
 
-boost::asio::awaitable<Network::data_t> Network::Tcp::Socket::read_data_async()
-{
-    Network::data_size_t data_size = co_await read_data_size_async();
-
-    co_return read_data(data_size);
-}
-
-boost::asio::awaitable<void> Network::Tcp::Socket::write_data_async(const Network::data_t& data)
-{
-    const Network::data_t write_buffer = get_write_buffer(data);
-    auto [error, _] = co_await boost::asio::async_write(_socket,
-                                                        boost::asio::buffer(write_buffer),
-                                                        boost::asio::as_tuple(boost::asio::use_awaitable));
-
-    if (error)
-    {
-        throw Network::OperationException(error);
-    }
-}
-
-boost::asio::awaitable<Network::data_size_t> Network::Tcp::Socket::read_data_size_async()
+boost::asio::awaitable<Network::data_t> Network::Tcp::Socket::read_data(Network::data_size_t data_size)
 {
     auto [error, _] = co_await boost::asio::async_read(_socket,
-                                                       _read_buffer.prepare(Network::DATA_SIZE),
-                                                       boost::asio::transfer_exactly(Network::DATA_SIZE),
+                                                       _read_buffer.prepare(data_size),
+                                                       boost::asio::transfer_exactly(data_size),
                                                        boost::asio::as_tuple(boost::asio::use_awaitable));
-
-    if (error)
-    {
-        throw Network::OperationException(error);
-    }
-
-    _read_buffer.commit(Network::DATA_SIZE);
-
-    Network::data_t extracted_data = extract_from_read_buffer(Network::DATA_SIZE);
-
-    Network::data_size_t data_size;
-    std::memcpy(&data_size, extracted_data.data(), Network::DATA_SIZE);
-
-    co_return data_size;
-}
-
-Network::data_t Network::Tcp::Socket::read_data(Network::data_size_t data_size)
-{
-    boost::system::error_code error;
-    boost::asio::read(_socket, _read_buffer.prepare(data_size), boost::asio::transfer_exactly(data_size), error);
 
     if (error)
     {
@@ -98,11 +59,6 @@ Network::data_t Network::Tcp::Socket::read_data(Network::data_size_t data_size)
 
     _read_buffer.commit(data_size);
 
-    return extract_from_read_buffer(data_size);
-}
-
-Network::data_t Network::Tcp::Socket::extract_from_read_buffer(Network::data_size_t data_size)
-{
     Network::data_t extracted_data(data_size);
     unsigned char* begin = static_cast<unsigned char*>(_read_buffer.data().data());
 
@@ -111,18 +67,17 @@ Network::data_t Network::Tcp::Socket::extract_from_read_buffer(Network::data_siz
 
     _read_buffer.consume(data_size);
 
-    return extracted_data;
+    co_return extracted_data;
 }
 
-Network::data_t Network::Tcp::Socket::get_write_buffer(const Network::data_t& data) const
+boost::asio::awaitable<void> Network::Tcp::Socket::write_data(const Network::data_t& data)
 {
-    Network::data_size_t data_size = data.size();
-    Network::data_t write_buffer = Network::data_t(Network::DATA_SIZE + data_size);
+    auto [error, _] = co_await boost::asio::async_write(_socket,
+                                                        boost::asio::buffer(data),
+                                                        boost::asio::as_tuple(boost::asio::use_awaitable));
 
-    // copy data size
-    std::memcpy(write_buffer.data(), &data_size, Network::DATA_SIZE);
-    // copy data
-    std::memcpy(write_buffer.data() + Network::DATA_SIZE, data.data(), data_size);
-
-    return write_buffer;
+    if (error)
+    {
+        throw Network::OperationException(error);
+    }
 }

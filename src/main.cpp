@@ -1,8 +1,17 @@
+#include "network/headerpackage.h"
+#include "network/serialization.h"
 #include <core/server.h>
+#include <vector>
 
 int main(int argc, char* argv[])
 {
     return Server(8080, "local").run();
+
+    //Network::HeaderPackage hp;
+    //hp.type = Network::RequestType::ClientList;
+    //hp.data_size = 1024;
+    //std::vector<unsigned char> s = Network::Serializer::serialize(hp);
+    //Network::HeaderPackage d = Network::Serializer::deserialize<Network::HeaderPackage>(s);
 
     //ClientMetadata client1{{}, "1123423423", "dvsdafgasdfsdfsda fsdfsdafdsfsda fsdfsdf"};
     //ClientMetadata client2{{}, "123", " fsdfsdafdsfsda fsdfsdf dvsdafgasdfsdfsda fsdfsdafdsfsda fsdfsdf"};

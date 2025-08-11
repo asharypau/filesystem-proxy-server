@@ -2,7 +2,8 @@
 #define NETWORK_TCP_SOCKET_H
 
 #include "../constants.h"
-#include "../operationexception.h"
+#include "../headerdraft.h"
+#include "../headerpackage.h"
 #include "../serialization.h"
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
@@ -28,28 +29,31 @@ public:
     void close();
 
     template<class TModel>
-    boost::asio::awaitable<TModel> read_async()
+    boost::asio::awaitable<TModel> read()
     {
-        Network::data_t data = co_await read_data_async();
-        TModel model = Network::Serializer::deserialize<TModel>(data);
+        Network::data_t header_package_data = co_await read_data(Network::HeaderPackage::SIZE);
+        Network::HeaderPackage header_package = Serializer::deserialize<Network::HeaderPackage>(header_package_data);
 
-        co_return model;
+        Network::data_t data = co_await read_data(header_package.data_size);
+
+        co_return Network::Serializer::deserialize<TModel>(data);
     }
 
     template<class TModel>
-    boost::asio::awaitable<void> write_async(const TModel& model)
+    boost::asio::awaitable<void> write(const Network::HeaderDraft& header_draft, const TModel& model)
     {
-        Network::data_t data = Network::Serializer::serialize<TModel>(model);
-        co_await write_data_async(data);
+        Network::data_t data = Network::Serializer::serialize(model);
+
+        Network::HeaderPackage header_package = Network::HeaderPackage::from_draft(header_draft, data.size());
+        Network::data_t header_package_data = Network::Serializer::serialize(header_package);
+
+        co_await write_data(header_package_data);
+        co_await write_data(data);
     }
 
 private:
-    boost::asio::awaitable<Network::data_t> read_data_async();
-    boost::asio::awaitable<void> write_data_async(const Network::data_t& data);
-    boost::asio::awaitable<Network::data_size_t> read_data_size_async();
-    Network::data_t read_data(Network::data_size_t data_size);
-    Network::data_t extract_from_read_buffer(Network::data_size_t data_size);
-    Network::data_t get_write_buffer(const Network::data_t& data) const;
+    boost::asio::awaitable<Network::data_t> read_data(Network::data_size_t data_size);
+    boost::asio::awaitable<void> write_data(const Network::data_t& data);
 
 private:
     boost::asio::ip::tcp::socket _socket;

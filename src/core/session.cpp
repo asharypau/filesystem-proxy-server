@@ -2,6 +2,8 @@
 #include "../models/clientcontext.h"
 #include "../models/clientinput.h"
 #include "../models/clientpayload.h"
+#include "../network/headerdraft.h"
+#include "../network/requesttype.h"
 #include "../services/clientmapper.h"
 
 Session::Session(Network::Tcp::Socket socket,
@@ -28,7 +30,7 @@ boost::asio::awaitable<void> Session::internal_run()
 
 boost::asio::awaitable<void> Session::activate_client()
 {
-    ClientInput client_input = co_await _socket.read_async<ClientInput>();
+    ClientInput client_input = co_await _socket.read<ClientInput>();
     if (_client_registry.exists(client_input.id))
     {
         _client_registry.activate(client_input.id, this);
@@ -53,6 +55,6 @@ boost::asio::awaitable<void> Session::write_clients()
         client_payloads.emplace_back(ClientMapper::map(client_context));
     }
 
-    co_await _socket.write_async(client_payloads);
+    co_await _socket.write(Network::HeaderDraft::of_type(Network::RequestType::ClientList), client_payloads);
     _client_subscriptions_manager.subscribe("client_registry_update", _client_id);
 }
