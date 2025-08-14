@@ -45,7 +45,7 @@ void Socket::close()
     }
 }
 
-boost::asio::awaitable<Network::data_t> Network::Tcp::Socket::read_data(Network::data_size_t data_size)
+boost::asio::awaitable<Network::Protocol::data_t> Socket::read(Network::Protocol::data_size_t data_size)
 {
     auto [error, _] = co_await boost::asio::async_read(_socket,
                                                        _read_buffer.prepare(data_size),
@@ -59,18 +59,18 @@ boost::asio::awaitable<Network::data_t> Network::Tcp::Socket::read_data(Network:
 
     _read_buffer.commit(data_size);
 
-    Network::data_t extracted_data(data_size);
+    Network::Protocol::data_t data(data_size);
     unsigned char* begin = static_cast<unsigned char*>(_read_buffer.data().data());
 
     // copy bytes from read_buffer to extracted_data
-    std::memcpy(extracted_data.data(), begin, data_size);
+    std::memcpy(data.data(), begin, data_size);
 
     _read_buffer.consume(data_size);
 
-    co_return extracted_data;
+    co_return data;
 }
 
-boost::asio::awaitable<void> Network::Tcp::Socket::write_data(const Network::data_t& data)
+boost::asio::awaitable<void> Socket::write(const Network::Protocol::data_t& data)
 {
     auto [error, _] = co_await boost::asio::async_write(_socket,
                                                         boost::asio::buffer(data),

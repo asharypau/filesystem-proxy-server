@@ -2,14 +2,11 @@
 #define CLIENTREGISTRY_H
 
 #include "../models/client.h"
-#include "../models/clientcontext.h"
+#include "../network/iclientconnection.h"
 #include "iclientregisterobserver.h"
 #include <mutex>
 #include <unordered_map>
 #include <vector>
-
-// forward declaration
-class Session;
 
 class ClientRegistry
 {
@@ -31,6 +28,11 @@ public:
 
     bool exists(const Client::id_t& id)
     {
+        if (id.empty())
+        {
+            return false;
+        }
+
         std::lock_guard<std::mutex> lock(_mtx);
 
         return _clients_map.contains(id);
@@ -83,11 +85,11 @@ public:
         }
     }
 
-    void activate(const Client::id_t& id, Session* session)
+    void activate(const Client::id_t& id, Network::IClientConnection* connection)
     {
         {
             std::lock_guard<std::mutex> lock(_mtx);
-            _clients_map.at(id).session = session;
+            _clients_map.at(id).connection = connection;
         }
 
         for (IClientRegistryObserver* observer : _observers)
@@ -100,7 +102,7 @@ public:
     {
         {
             std::lock_guard<std::mutex> lock(_mtx);
-            _clients_map.at(id).session = nullptr;
+            _clients_map.at(id).connection = nullptr;
         }
 
         for (IClientRegistryObserver* observer : _observers)

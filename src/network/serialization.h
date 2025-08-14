@@ -1,7 +1,7 @@
 #ifndef NETWORK_SERIALIZATION_H
 #define NETWORK_SERIALIZATION_H
 
-#include "constants.h"
+#include "protocoltypes.h"
 #include <string>
 #include <vector>
 
@@ -11,7 +11,7 @@ template<class TModel>
 class ISerializable
 {
 public:
-    Network::data_size_t size() const { return get_impl()->size_impl(); }
+    Network::Protocol::data_size_t size() const { return get_impl()->size_impl(); }
     auto as_tuple() { return get_impl()->as_tuple_impl(); }
     auto as_tuple() const { return get_impl()->as_tuple_impl(); }
 
@@ -31,10 +31,10 @@ class Serializer
 {
 public:
     template<class TModel>
-    static Network::data_t serialize(const TModel& model)
+    static Network::Protocol::data_t serialize(const TModel& model)
     {
-        Network::data_size_t offset = 0;
-        Network::data_t data;
+        Network::Protocol::data_size_t offset = 0;
+        Network::Protocol::data_t data;
 
         if constexpr (Network::Serializable<TModel>)
         {
@@ -50,9 +50,9 @@ public:
     }
 
     template<class TModel>
-    static TModel deserialize(const Network::data_t& data)
+    static TModel deserialize(const Network::Protocol::data_t& data)
     {
-        Network::data_size_t offset = 0;
+        Network::Protocol::data_size_t offset = 0;
         TModel model{};
 
         if constexpr (Network::Serializable<TModel>)
@@ -70,63 +70,69 @@ public:
 
 private:
     template<class... Args>
-    static void serialize_tuple(Network::data_t& data,
+    static void serialize_tuple(Network::Protocol::data_t& data,
                                 const std::tuple<const Args&...>& tuple,
-                                Network::data_size_t* offset)
+                                Network::Protocol::data_size_t* offset)
     {
         std::apply([&](const auto&... args) { (internal_serialize(data, args, offset), ...); }, tuple);
     }
 
     template<class... Args>
-    static void deserialize_tuple(const Network::data_t& data, std::tuple<Args&...>& tuple, Network::data_size_t* offset)
+    static void deserialize_tuple(const Network::Protocol::data_t& data,
+                                  std::tuple<Args&...>& tuple,
+                                  Network::Protocol::data_size_t* offset)
     {
         std::apply([&](auto&... args) { (internal_deserialize(data, args, offset), ...); }, tuple);
     }
 
     template<class TModel>
-    static void serialize_vector(Network::data_t& data, const std::vector<TModel>& model, Network::data_size_t* offset)
+    static void serialize_vector(Network::Protocol::data_t& data,
+                                 const std::vector<TModel>& model,
+                                 Network::Protocol::data_size_t* offset)
     {
-        Network::data_size_t data_size = Network::DATA_SIZE;
+        Network::Protocol::data_size_t data_size = sizeof(Network::Protocol::data_size_t);
         for (const TModel& item : model)
         {
-            data_size += Network::DATA_SIZE;
+            data_size += sizeof(Network::Protocol::data_size_t);
             data_size += item.size();
         }
 
         data.resize(data_size);
 
         // vector size
-        Network::data_size_t vector_size = static_cast<Network::data_size_t>(model.size());
-        std::memcpy(data.data() + *offset, &vector_size, Network::DATA_SIZE);
-        *offset += Network::DATA_SIZE;
+        Network::Protocol::data_size_t vector_size = static_cast<Network::Protocol::data_size_t>(model.size());
+        std::memcpy(data.data() + *offset, &vector_size, sizeof(Network::Protocol::data_size_t));
+        *offset += sizeof(Network::Protocol::data_size_t);
 
         for (const TModel& item : model)
         {
             // item size
-            Network::data_size_t item_size = static_cast<Network::data_size_t>(item.size());
-            std::memcpy(data.data() + *offset, &item_size, Network::DATA_SIZE);
-            *offset += Network::DATA_SIZE;
+            Network::Protocol::data_size_t item_size = static_cast<Network::Protocol::data_size_t>(item.size());
+            std::memcpy(data.data() + *offset, &item_size, sizeof(Network::Protocol::data_size_t));
+            *offset += sizeof(Network::Protocol::data_size_t);
 
             serialize_tuple(data, item.as_tuple(), offset);
         }
     }
 
     template<class TModel>
-    static void deserialize_vector(const Network::data_t& data, std::vector<TModel>& model, Network::data_size_t* offset)
+    static void deserialize_vector(const Network::Protocol::data_t& data,
+                                   std::vector<TModel>& model,
+                                   Network::Protocol::data_size_t* offset)
     {
         // vector size
-        Network::data_size_t vector_size = 0;
-        std::memcpy(&vector_size, data.data() + *offset, Network::DATA_SIZE);
-        *offset += Network::DATA_SIZE;
+        Network::Protocol::data_size_t vector_size = 0;
+        std::memcpy(&vector_size, data.data() + *offset, sizeof(Network::Protocol::data_size_t));
+        *offset += sizeof(Network::Protocol::data_size_t);
 
         model.reserve(vector_size);
 
         while (vector_size-- > 0)
         {
             // item size
-            Network::data_size_t item_size = 0;
-            std::memcpy(&item_size, data.data() + *offset, Network::DATA_SIZE);
-            *offset += Network::DATA_SIZE;
+            Network::Protocol::data_size_t item_size = 0;
+            std::memcpy(&item_size, data.data() + *offset, sizeof(Network::Protocol::data_size_t));
+            *offset += sizeof(Network::Protocol::data_size_t);
 
             model.emplace_back();
             auto tuple = model.back().as_tuple();
@@ -135,7 +141,9 @@ private:
     }
 
     template<class TModel>
-    static void internal_serialize(Network::data_t& data, const TModel& model, Network::data_size_t* offset)
+    static void internal_serialize(Network::Protocol::data_t& data,
+                                   const TModel& model,
+                                   Network::Protocol::data_size_t* offset)
     {
         if constexpr (std::is_trivially_copyable_v<TModel>)
         {
@@ -148,7 +156,9 @@ private:
     }
 
     template<class TModel>
-    static void internal_deserialize(const Network::data_t& data, TModel& model, Network::data_size_t* offset)
+    static void internal_deserialize(const Network::Protocol::data_t& data,
+                                     TModel& model,
+                                     Network::Protocol::data_size_t* offset)
     {
         if constexpr (std::is_trivially_copyable_v<TModel>)
         {
@@ -161,41 +171,46 @@ private:
     }
 
     template<class TModel>
-    static void serialize_trivially_copyable_type(Network::data_t& data,
+    static void serialize_trivially_copyable_type(Network::Protocol::data_t& data,
                                                   const TModel& model,
-                                                  Network::data_size_t* offset)
+                                                  Network::Protocol::data_size_t* offset)
     {
         std::memcpy(data.data() + *offset, &model, sizeof(TModel));
         *offset += sizeof(TModel);
     }
 
     template<class TModel>
-    static void deserialize_trivially_copyable_type(const Network::data_t& data,
+    static void deserialize_trivially_copyable_type(const Network::Protocol::data_t& data,
                                                     TModel& model,
-                                                    Network::data_size_t* offset)
+                                                    Network::Protocol::data_size_t* offset)
     {
         std::memcpy(&model, data.data() + *offset, sizeof(TModel));
         *offset += sizeof(TModel);
     }
 
-    static void serialize_string(Network::data_t& data, const std::string& model, Network::data_size_t* offset)
+    static void serialize_string(Network::Protocol::data_t& data,
+                                 const std::string& model,
+                                 Network::Protocol::data_size_t* offset)
     {
         // string size
-        const Network::data_size_t string_size = static_cast<const Network::data_size_t>(model.size());
-        std::memcpy(data.data() + *offset, &string_size, Network::DATA_SIZE);
-        *offset += Network::DATA_SIZE;
+        const Network::Protocol::data_size_t string_size = static_cast<const Network::Protocol::data_size_t>(
+            model.size());
+        std::memcpy(data.data() + *offset, &string_size, sizeof(Network::Protocol::data_size_t));
+        *offset += sizeof(Network::Protocol::data_size_t);
 
         // string
         std::memcpy(data.data() + *offset, model.data(), string_size);
         *offset += string_size;
     }
 
-    static void deserialize_string(const Network::data_t& data, std::string& model, Network::data_size_t* offset)
+    static void deserialize_string(const Network::Protocol::data_t& data,
+                                   std::string& model,
+                                   Network::Protocol::data_size_t* offset)
     {
         // string size
-        Network::data_size_t string_size = 0;
-        std::memcpy(&string_size, data.data() + *offset, Network::DATA_SIZE);
-        *offset += Network::DATA_SIZE;
+        Network::Protocol::data_size_t string_size = 0;
+        std::memcpy(&string_size, data.data() + *offset, sizeof(Network::Protocol::data_size_t));
+        *offset += sizeof(Network::Protocol::data_size_t);
 
         // string
         model.reserve(string_size);

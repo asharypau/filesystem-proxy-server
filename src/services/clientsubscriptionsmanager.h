@@ -2,7 +2,6 @@
 #define CLIENTSUBSCRIPTIONSMANAGER_H
 
 #include "../models/client.h"
-#include "../models/clientcontext.h"
 #include "clientregistry.h"
 #include "iclientregisterobserver.h"
 #include <mutex>

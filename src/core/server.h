@@ -2,7 +2,10 @@
 #define SERVER_H
 
 #include "../network/tcp/acceptor.h"
+#include "../services/clientactivator.h"
 #include "../services/clientregistry.h"
+#include "../services/clientsubscriptionsmanager.h"
+#include "dispatcher.h"
 #include "sessionmanager.h"
 #include <boost/asio.hpp>
 #include <string>
@@ -22,6 +25,8 @@ private:
     Network::Tcp::Acceptor _acceptor;
     ClientRegistry _client_registry;
     ClientSubscriptionsManager _client_subscriptions_manager;
+    ClientActivator _client_activator;
+    Dispatcher _dispatcher;
     SessionManager _session_manager;
 };
 

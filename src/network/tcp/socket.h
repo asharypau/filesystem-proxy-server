@@ -1,10 +1,7 @@
 #ifndef NETWORK_TCP_SOCKET_H
 #define NETWORK_TCP_SOCKET_H
 
-#include "../constants.h"
-#include "../headerdraft.h"
-#include "../headerpackage.h"
-#include "../serialization.h"
+#include "../protocoltypes.h"
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 
@@ -27,33 +24,9 @@ public:
     Socket& operator=(const Socket&) = delete;
 
     void close();
-
-    template<class TModel>
-    boost::asio::awaitable<TModel> read()
-    {
-        Network::data_t header_package_data = co_await read_data(Network::HeaderPackage::SIZE);
-        Network::HeaderPackage header_package = Serializer::deserialize<Network::HeaderPackage>(header_package_data);
-
-        Network::data_t data = co_await read_data(header_package.data_size);
-
-        co_return Network::Serializer::deserialize<TModel>(data);
-    }
-
-    template<class TModel>
-    boost::asio::awaitable<void> write(const Network::HeaderDraft& header_draft, const TModel& model)
-    {
-        Network::data_t data = Network::Serializer::serialize(model);
-
-        Network::HeaderPackage header_package = Network::HeaderPackage::from_draft(header_draft, data.size());
-        Network::data_t header_package_data = Network::Serializer::serialize(header_package);
-
-        co_await write_data(header_package_data);
-        co_await write_data(data);
-    }
-
-private:
-    boost::asio::awaitable<Network::data_t> read_data(Network::data_size_t data_size);
-    boost::asio::awaitable<void> write_data(const Network::data_t& data);
+    bool is_open() { return _socket.is_open(); }
+    boost::asio::awaitable<Network::Protocol::data_t> read(Network::Protocol::data_size_t data_size);
+    boost::asio::awaitable<void> write(const Network::Protocol::data_t& data);
 
 private:
     boost::asio::ip::tcp::socket _socket;

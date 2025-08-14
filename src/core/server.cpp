@@ -7,7 +7,9 @@ Server::Server(unsigned short port, std::string host)
     , _acceptor(port, host, _context)
     , _client_registry()
     , _client_subscriptions_manager(_client_registry)
-    , _session_manager(_context, _client_registry, _client_subscriptions_manager)
+    , _client_activator(_client_registry)
+    , _dispatcher(_client_registry, _client_subscriptions_manager)
+    , _session_manager(_context, _client_registry, _client_subscriptions_manager, _client_activator, _dispatcher)
 {
 }
 
@@ -40,9 +42,9 @@ int Server::run()
 
 boost::asio::awaitable<void> Server::accept()
 {
-    Network::Tcp::Socket socket = co_await _acceptor.accept();
-    //Network::Tcp::Socket socket(_context);
-    _session_manager.run_new(std::move(socket));
-
-    co_return;
+    while (true)
+    {
+        Network::Tcp::Socket socket = co_await _acceptor.accept();
+        _session_manager.run_new(std::move(socket));
+    }
 }

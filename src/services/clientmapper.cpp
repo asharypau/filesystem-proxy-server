@@ -1,11 +1,11 @@
 #include "clientmapper.h"
 
-ClientContext ClientMapper::map(ClientInput client_input, Session* session)
+ClientContext ClientMapper::map(ClientActivationData client_activation_data, Network::IClientConnection* connection)
 {
     ClientContext client_context;
-    client_context.id = client_input.id;
-    client_context.root = client_input.root;
-    client_context.session = session;
+    client_context.id = client_activation_data.id;
+    client_context.root = client_activation_data.root;
+    client_context.connection = connection;
 
     return client_context;
 }

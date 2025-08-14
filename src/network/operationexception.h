@@ -2,6 +2,7 @@
 #define NETWORK_OPERATION_EXCEPTION_H
 
 #include <boost/asio.hpp>
+#include <string>
 
 namespace Network
 {
@@ -14,8 +15,8 @@ public:
     {
     }
 
-    OperationException(int error_code, const std::string message)
-        : std::runtime_error(std::move(message))
+    OperationException(int error_code, const std::string& message)
+        : std::runtime_error(message)
         , _error_code(error_code)
     {
     }

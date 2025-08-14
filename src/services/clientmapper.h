@@ -1,17 +1,13 @@
 #ifndef CLIENTMAPPER_H
 #define CLIENTMAPPER_H
 
-#include "../models/clientcontext.h"
-#include "../models/clientinput.h"
-#include "../models/clientpayload.h"
-
-// forward declaration
-class Session;
+#include "../models/client.h"
+#include "../network/iclientconnection.h"
 
 class ClientMapper
 {
 public:
-    static ClientContext map(ClientInput client_input, Session* session);
+    static ClientContext map(ClientActivationData client_activation_data, Network::IClientConnection* connection);
     static ClientPayload map(ClientContext client_context);
 };
 
