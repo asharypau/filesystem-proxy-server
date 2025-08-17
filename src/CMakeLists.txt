@@ -8,7 +8,7 @@ add_executable(
     "core/sessionmanager.h" "core/sessionmanager.cpp"
 
     "handlers/ihandler.h"
-    "handlers/clienthandler.h" "handlers/clienthandler.cpp"
+    "handlers/clientrequesthandler.h" "handlers/clientrequesthandler.cpp"
 
     "models/client.h"
     "models/subscriber.h"

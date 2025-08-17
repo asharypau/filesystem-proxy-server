@@ -6,6 +6,8 @@
 class IClientRegistryObserver
 {
 public:
+    virtual ~IClientRegistryObserver() = default;
+
     virtual void added(const Client::id_t& id) = 0;
     virtual void removed(const Client::id_t& id) = 0;
     virtual void activated(const Client::id_t& id) = 0;

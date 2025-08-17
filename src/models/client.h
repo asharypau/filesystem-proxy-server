@@ -15,13 +15,13 @@ public:
     Client::id_t id;
 };
 
-class ClientActivationData : public Client, public Network::ISerializable<ClientActivationData>
+class ClientActivation : public Client, public Network::ISerializable<ClientActivation>
 {
 public:
     std::string root;
 
 private:
-    friend class Network::ISerializable<ClientActivationData>;
+    friend class Network::ISerializable<ClientActivation>;
 
     Network::Protocol::data_size_t size_impl() const
     {

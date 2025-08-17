@@ -15,7 +15,7 @@ class Dispatcher
 public:
     Dispatcher(ClientRegistry& client_registry, ClientSubscriptionsManager& client_subscriptions_manager);
 
-    boost::asio::awaitable<void> dispatch(Client::id_t client_id, const Network::Protocol::Headers& headers);
+    boost::asio::awaitable<void> dispatch(const Client::id_t& client_id, const Network::Protocol::Headers& headers);
 
 private:
     std::unordered_map<uint16_t, std::unique_ptr<IHandler>> _handlers;

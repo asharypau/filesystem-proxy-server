@@ -14,7 +14,7 @@
 class Session : public Network::IClientConnection
 {
 public:
-    Session(Network::Tcp::Socket socket, ClientActivator client_activator, Dispatcher& dispatcher);
+    Session(Network::Tcp::Socket socket, ClientActivator& client_activator, Dispatcher& dispatcher);
     ~Session();
 
     // Disallow movement  and assignment

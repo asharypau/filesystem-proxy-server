@@ -9,8 +9,10 @@ std::string Network::Protocol::to_string(Network::Protocol::Type type)
         {
         case Network::Protocol::Type::Activation:
             return "Activation";
-        case Network::Protocol::Type::Client:
-            return "Client";
+        case Network::Protocol::Type::Activated:
+            return "Activated";
+        case Network::Protocol::Type::ClientRequest:
+            return "ClientRequest";
 
         case Network::Protocol::Type::None:
         default:
@@ -19,17 +21,17 @@ std::string Network::Protocol::to_string(Network::Protocol::Type type)
     }
 }
 
-std::string Network::Protocol::to_string(Network::Protocol::Method method)
+std::string Network::Protocol::to_string(Network::Protocol::Action method)
 {
     {
         switch (method)
         {
-        case Network::Protocol::Method::Get:
-            return "Get";
-        case Network::Protocol::Method::GetAll:
-            return "GetAll";
+        case Network::Protocol::Action::GetClients:
+            return "GetClients";
+        case Network::Protocol::Action::GetClientFiles:
+            return "GetClientFiles";
 
-        case Network::Protocol::Method::None:
+        case Network::Protocol::Action::None:
         default:
             return "None";
         }

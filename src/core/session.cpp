@@ -2,7 +2,7 @@
 #include "../network/operationexception.h"
 #include "../network/serialization.h"
 
-Session::Session(Network::Tcp::Socket socket, ClientActivator client_activator, Dispatcher& dispatcher)
+Session::Session(Network::Tcp::Socket socket, ClientActivator& client_activator, Dispatcher& dispatcher)
     : _socket(std::move(socket))
     , _client_activator(client_activator)
     , _dispatcher(dispatcher)

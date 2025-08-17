@@ -7,7 +7,7 @@
 class ClientMapper
 {
 public:
-    static ClientContext map(ClientActivationData client_activation_data, Network::IClientConnection* connection);
+    static ClientContext map(ClientActivation client_activation, Network::IClientConnection* connection);
     static ClientPayload map(ClientContext client_context);
 };
 

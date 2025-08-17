@@ -14,32 +14,34 @@ enum class Type : uint16_t
 {
     None,
     Activation,
-    Client,
+    Activated,
+    ClientRequest,
 };
 
-enum class Method : uint16_t
+enum class Action : uint16_t
 {
     None,
-    Get,
-    GetAll,
+    GetClients,
+    GetClientFiles,
 };
 
 class Headers : public Network::ISerializable<Headers>
 {
 public:
     static constexpr std::size_t SIZE = sizeof(Network::Protocol::data_size_t) + sizeof(Network::Protocol::Type)
-                                        + sizeof(Network::Protocol::Method);
+                                        + sizeof(Network::Protocol::Action);
 
     Network::Protocol::data_size_t data_size = 0;
     Network::Protocol::Type type = Network::Protocol::Type::None;
-    Network::Protocol::Method method = Network::Protocol::Method::None;
+    Network::Protocol::Action method = Network::Protocol::Action::None;
 
-    static Network::Protocol::Headers make_client_type(Network::Protocol::data_size_t size,
-                                                       Network::Protocol::Method request_method)
+    static Network::Protocol::Headers make(Network::Protocol::data_size_t size = 0,
+                                           Network::Protocol::Type request_type = Network::Protocol::Type::None,
+                                           Network::Protocol::Action request_method = Network::Protocol::Action::None)
     {
         Network::Protocol::Headers headers;
         headers.data_size = size;
-        headers.type = Network::Protocol::Type::Client;
+        headers.type = request_type;
         headers.method = request_method;
 
         return headers;
@@ -54,7 +56,7 @@ private:
 };
 
 std::string to_string(Network::Protocol::Type type);
-std::string to_string(Network::Protocol::Method method);
+std::string to_string(Network::Protocol::Action method);
 } // namespace Protocol
 } // namespace Network
 

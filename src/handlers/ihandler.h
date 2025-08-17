@@ -10,7 +10,8 @@ class IHandler
 public:
     virtual ~IHandler() = default;
 
-    virtual boost::asio::awaitable<void> handle(Client::id_t client_id, const Network::Protocol::Headers& headers) = 0;
+    virtual boost::asio::awaitable<void> handle(const Client::id_t& client_id, const Network::Protocol::Headers& headers)
+        = 0;
 };
 
 #endif // IHANDLER_H

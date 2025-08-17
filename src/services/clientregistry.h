@@ -18,7 +18,7 @@ public:
     {
     }
 
-    // Disallow movement  and assignment
+    // Disallow movement and assignment
     ClientRegistry(ClientRegistry&& other) = delete;
     ClientRegistry& operator=(ClientRegistry&& other) = delete;
 
@@ -59,17 +59,19 @@ public:
         return clients;
     }
 
-    void add(const ClientContext& client)
+    void add(ClientContext client)
     {
+        const Client::id_t id = client.id;
+
         {
             std::lock_guard<std::mutex> lock(_mtx);
-            _clients_map.emplace(client.id, client);
+            _clients_map.emplace(id, std::move(client));
         }
 
-        for (IClientRegistryObserver* observer : _observers)
-        {
-            observer->added(client.id);
-        }
+        //for (IClientRegistryObserver* observer : _observers)
+        //{
+        //    observer->added(id);
+        //}
     }
 
     void remove(const Client::id_t& id)
